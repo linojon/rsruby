@@ -124,7 +124,7 @@ VALUE rs_shutdown(VALUE self){
  */
 VALUE rr_init(VALUE self){
 
-
+  increase_stack_size(); // JSL bug fix 
   init_R(0,NULL);
   // Initialize the list of protected objects
   R_References = R_NilValue;
@@ -180,3 +180,18 @@ void Init_rsruby_c(){
 
 }
 
+
+/* JSL bug fix */
+/* http://rubyforge.org/forum/forum.php?thread_id=46998&forum_id=7794 */
+#include <sys/time.h>
+#include <sys/resource.h>
+#define STACK_MULTIPLIER 16
+
+void increase_stack_size(void)
+{
+struct rlimit rlim;
+
+getrlimit(RLIMIT_STACK, &rlim);
+rlim.rlim_cur = rlim.rlim_cur * STACK_MULTIPLIER;
+setrlimit(RLIMIT_STACK, &rlim);
+}
